@@ -1,0 +1,17 @@
+%% Задание 6 — архитектура автоматического обновления базы знаний
+flowchart TD
+    Cron["cron (ежедневно 06:00)\nscripts/update.sh"] --> Scan
+
+    subgraph Pipeline["update_index.py"]
+        Scan["1. Сканирование источника\nsha1 файлов vs manifest"]
+        Chunk["2. Чанкинг\nRecursiveCharacterSplitter"]
+        Embed["3. Эмбеддинги\nSentenceTransformer / tfidf"]
+        Upsert["4. Upsert в индекс\nFAISS add"]
+        Scan -->|только новые/изменённые| Chunk --> Embed --> Upsert
+    end
+
+    KB[("knowledge_base/\n*.md / *.txt")] --> Scan
+    Upsert --> Index[("Векторный индекс\nfaiss.index + meta.pkl + manifest.json")]
+    Scan -.-> Logs["logs/update.log\nlogs/cron.log"]
+    Upsert -.-> Logs
+    Index --> Bot["Бот: cli.py / api.py\n(подхватывает обновление\nбез перезапуска LLM)"]

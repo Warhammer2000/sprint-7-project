@@ -1,0 +1,38 @@
+@startuml task6_update_architecture
+title Задание 6 — автоматическое обновление базы знаний (RAG)
+
+skinparam componentStyle rectangle
+skinparam shadowing false
+
+actor "cron\n(ежедневно 06:00)" as Cron
+
+package "Источник данных" {
+  folder "knowledge_base/\n(*.md / *.txt)" as KB
+}
+
+package "Пайплайн обновления (update_index.py)" {
+  component "1. Сканирование\n(sha1 файлов vs manifest)" as Scan
+  component "2. Чанкинг\n(RecursiveCharacterSplitter)" as Chunk
+  component "3. Эмбеддинги\n(SentenceTransformer / tfidf)" as Embed
+  component "4. Upsert в индекс\n(FAISS add)" as Upsert
+}
+
+database "Векторный индекс\n(index/faiss.index +\nmeta.pkl + manifest.json)" as Index
+file "Логи\n(logs/update.log,\nlogs/cron.log)" as Logs
+
+Cron --> Scan : запуск update.sh
+KB --> Scan : новые/изменённые\nдокументы
+Scan --> Chunk : только дельта
+Chunk --> Embed : чанки + метаданные
+Embed --> Upsert : векторы
+Upsert --> Index : добавление чанков
+Scan ..> Logs : старт/финиш, число файлов
+Upsert ..> Logs : +N чанков, размер индекса, ошибки
+
+note bottom of Index
+  Бот (cli.py / api.py) читает этот же индекс
+  при ответах — обновление подхватывается
+  без перезапуска генеративной модели (LLM).
+end note
+
+@enduml

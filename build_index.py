@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import hashlib
 import sys
 import time
 from datetime import datetime
@@ -20,6 +21,15 @@ from ragbot.chunking import chunk_documents, load_documents
 from ragbot.config import settings
 from ragbot.embeddings import build_embedder
 from ragbot.vector_store import VectorStore
+
+
+def source_hashes(kb_dir) -> dict:
+    """sha1 каждого файла базы знаний — базис для инкрементального обновления."""
+    hashes = {}
+    for path in sorted(kb_dir.glob("**/*")):
+        if path.suffix.lower() in {".md", ".txt"}:
+            hashes[path.name] = hashlib.sha1(path.read_bytes()).hexdigest()
+    return hashes
 
 
 def main() -> None:
@@ -42,6 +52,7 @@ def main() -> None:
     store.manifest["built_at"] = datetime.now().isoformat(timespec="seconds")
     store.manifest["chunk_size"] = settings.chunk_size
     store.manifest["chunk_overlap"] = settings.chunk_overlap
+    store.manifest["sources_hash"] = source_hashes(settings.kb_dir)
     store.save(settings.index_dir)
 
     dt = time.perf_counter() - t0
