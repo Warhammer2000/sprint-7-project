@@ -1,0 +1,21 @@
+# Запуск RAG-бота: docker compose up --build
+# Бот и векторный индекс FAISS работают в одном процессе (FAISS — встраиваемый,
+# отдельный сервис не нужен). Индекс и логи вынесены в volume для персистентности.
+services:
+  rag-bot:
+    build: .
+    container_name: quantumforge-rag-bot
+    ports:
+      - "8000:8000"
+    environment:
+      # Офлайн-режим по умолчанию (без ключей). Для OpenAI задайте:
+      #   LLM_BACKEND=openai и OPENAI_API_KEY=...
+      LLM_BACKEND: "offline"
+      EMBEDDINGS_BACKEND: "tfidf"
+      SECURITY_ENABLED: "true"
+      API_PORT: "8000"
+    volumes:
+      - ./index:/app/index
+      - ./logs:/app/logs
+      - ./knowledge_base:/app/knowledge_base
+    restart: unless-stopped
