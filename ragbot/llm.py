@@ -27,8 +27,14 @@ def _tokens(text: str) -> set:
     return {w.lower() for w in _WORD_RE.findall(text) if len(w) > 2}
 
 
+def _strip_markdown(text: str) -> str:
+    """Убирает строки-заголовки markdown (# ...), чтобы они не попадали в ответ."""
+    lines = [ln for ln in text.splitlines() if not ln.lstrip().startswith("#")]
+    return "\n".join(lines).strip()
+
+
 def _sentences(text: str) -> List[str]:
-    parts = re.split(r"(?<=[.!?])\s+", text.replace("\n", " "))
+    parts = re.split(r"(?<=[.!?])\s+", _strip_markdown(text).replace("\n", " "))
     return [p.strip() for p in parts if p.strip()]
 
 
