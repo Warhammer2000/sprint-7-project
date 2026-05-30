@@ -1,0 +1,9 @@
+{
+  "embedder_backend": "tfidf",
+  "dim": 33,
+  "n_chunks": 34,
+  "n_docs": 34,
+  "built_at": "2026-05-30T12:23:29",
+  "chunk_size": 600,
+  "chunk_overlap": 120
+}

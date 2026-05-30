@@ -1,0 +1,4 @@
+{
+  "backend": "tfidf",
+  "dim": 33
+}
