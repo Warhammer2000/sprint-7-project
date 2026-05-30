@@ -50,11 +50,47 @@ def _preprocess(query: str) -> str:
     return re.sub(r"\s+", " ", query).strip()
 
 
+# Вопросительные/служебные слова — не считаем их «сущностями», даже если с заглавной.
+QUESTION_STOPWORDS = {
+    "кто", "что", "какая", "какой", "какое", "какие", "каким", "каких", "где",
+    "когда", "почему", "зачем", "как", "сколько", "чем", "чём", "кому", "кого",
+    "чей", "чья", "чьи", "расскажи", "назови", "опиши", "перечисли", "это",
+    "этот", "эта", "эти", "ли", "про", "для", "или", "был", "была", "были",
+}
+_WORD_RE = re.compile(r"[а-яёa-z0-9]+", re.I)
+
+
+def _build_vocab(metas) -> set:
+    vocab = set()
+    for m in metas:
+        for w in _WORD_RE.findall(m.get("text", "").lower()):
+            if len(w) >= 3:
+                vocab.add(w)
+    return vocab
+
+
 class RagBot:
     def __init__(self, store: VectorStore, settings: Settings):
         self.store = store
         self.settings = settings
         self.llm = build_llm(settings)
+        self.vocab = _build_vocab(store.metas)
+
+    def _unknown_entities(self, query: str) -> List[str]:
+        """Имена собственные из запроса, которых нет в базе знаний (out-of-domain).
+
+        Позволяет честно отвечать «Я не знаю» на запросы про сущности, которых
+        нет в нашей вымышленной вселенной (реальный мир, оригинальные имена,
+        опечатки), даже если по отдельным словам найдётся «похожий» чанк.
+        """
+        out: List[str] = []
+        for tok in query.split():
+            ct = tok.strip(" ?.!,;:»«\"'()—–-").lower()
+            if len(ct) < 3 or ct in QUESTION_STOPWORDS:
+                continue
+            if tok[:1].isupper() and ct not in self.vocab:
+                out.append(ct)
+        return out
 
     @classmethod
     def from_settings(cls, settings: Settings = default_settings) -> "RagBot":
@@ -85,9 +121,20 @@ class RagBot:
         # Шаги 2b–3. Эмбеддинг + recall
         hits = self.store.search(query, s.recall_k)
 
+        result.top_score = hits[0][0] if hits else 0.0
+
+        # Шаг 3a. Grounding: незнакомые имена собственные → честный отказ
+        unknown = self._unknown_entities(query)
+        if unknown:
+            result.refused = True
+            result.answer = IDK
+            notes.append("вне базы знаний: " + ", ".join(sorted(set(unknown))))
+            result.security_notes = notes
+            self._maybe_log(log, result, chunks_found=len(hits))
+            return result
+
         # Шаг 4. Отсев по порогу близости
         relevant = [(score, meta) for score, meta in hits if score >= s.min_score]
-        result.top_score = hits[0][0] if hits else 0.0
 
         # Нет релевантного контекста → честный отказ
         if not relevant:
