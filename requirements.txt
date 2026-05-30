@@ -1,0 +1,24 @@
+# ── Core RAG stack ───────────────────────────────────────────
+numpy>=1.24
+faiss-cpu>=1.7.4
+scikit-learn>=1.3          # лёгкий tfidf-эмбеддер (офлайн-фоллбэк) + утилиты
+python-dotenv>=1.0
+
+# ── LangChain (обязательно по заданию) ───────────────────────
+langchain>=0.2
+langchain-community>=0.2
+langchain-text-splitters>=0.2
+
+# ── Embeddings (качество) ────────────────────────────────────
+sentence-transformers>=2.6   # тянет torch; для офлайн-демо можно EMBEDDINGS_BACKEND=tfidf
+
+# ── LLM backends ─────────────────────────────────────────────
+openai>=1.30                 # нужен только при LLM_BACKEND=openai
+requests>=2.31               # Ollama / safety-API
+
+# ── Interfaces ───────────────────────────────────────────────
+fastapi>=0.110
+uvicorn[standard]>=0.29
+
+# ── Telegram (опционально, тариф Про) ────────────────────────
+python-telegram-bot>=21.0
