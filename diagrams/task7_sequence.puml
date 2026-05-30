@@ -1,0 +1,53 @@
+@startuml task7_sequence
+title Задание 7 — обработка запроса и оценка качества (с точками сбоя)
+
+actor Пользователь as U
+participant "RagBot\n(rag.py)" as Bot
+participant "Security\n(security.py)" as Sec
+participant "Embedder\n(embeddings.py)" as Emb
+database "FAISS-индекс\n(vector_store.py)" as Idx
+participant "LLM\n(llm.py)" as LLM
+participant "Лог\n(logging_utils.py)" as Log
+
+U -> Bot : вопрос
+Bot -> Sec : is_query_safe(q)
+alt запрос — jailbreak
+  Sec --> Bot : небезопасен
+  Bot --> U : отказ (blocked)
+  note right of Bot #FFE0E0: ❌ точка сбоя: prompt-injection
+end
+
+Bot -> Emb : encode(q)
+Emb -> Idx : search(vector, recall_k)
+Idx --> Bot : кандидаты + scores
+
+alt незнакомая сущность (нет в vocab)
+  Bot --> U : «Я не знаю» (grounding)
+  note right of Bot #FFF0E0: ❌ точка сбоя: вопрос вне базы
+end
+
+alt все scores < min_score
+  Bot --> U : «Я не знаю» (пустой/слабый поиск)
+  note right of Bot #FFF0E0: ❌ точка сбоя: пробел в базе / плохой recall
+end
+
+Bot -> Sec : filter_chunks(top_k)
+Sec --> Bot : очищенные чанки
+Bot -> LLM : prompt(few-shot, CoT, context)
+LLM --> Bot : черновик ответа
+Bot -> Sec : guard_output(ответ)
+Sec --> Bot : ответ без секретов
+note right of Bot #FFF0E0: ❌ точка сбоя: галлюцинация / нерелевантный чанк
+Bot -> Log : запрос, chunks_found, success, sources
+Bot --> U : ответ + источники
+
+== Автоматическая оценка (evaluate.py) ==
+participant "Golden set" as G
+G -> Bot : 13 вопросов (known / gap)
+Bot -> Log : результат каждого
+note over G, Log
+  Метрики: точность по known,
+  доля честных отказов по gap.
+  Падение метрик → сигнал о пробеле.
+end note
+@enduml

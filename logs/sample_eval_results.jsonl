@@ -1,0 +1,13 @@
+{"q": "Кто уничтожил Звезду Гибели?", "type": "known", "refused": false, "ok": true, "answer_len": 166, "top_score": 0.702, "sources": ["23.md", "01.md", "21.md", "05.md"]}
+{"q": "Что такое Эфир?", "type": "known", "refused": false, "ok": true, "answer_len": 182, "top_score": 0.911, "sources": ["19.md", "11.md", "07.md"]}
+{"q": "Кто такой Хейн Сольверо?", "type": "known", "refused": false, "ok": true, "answer_len": 202, "top_score": 0.949, "sources": ["05.md", "33.md", "17.md"]}
+{"q": "Что такое плазменный клинок?", "type": "known", "refused": false, "ok": true, "answer_len": 106, "top_score": 0.972, "sources": ["20.md"]}
+{"q": "Где скрывался магистр Йорн?", "type": "known", "refused": false, "ok": true, "answer_len": 160, "top_score": 0.791, "sources": ["08.md", "28.md", "14.md"]}
+{"q": "Кто командовал силами Галактической Гегемонии?", "type": "known", "refused": false, "ok": true, "answer_len": 150, "top_score": 0.849, "sources": ["03.md", "16.md", "26.md"]}
+{"q": "Что такое кайрон-кристалл?", "type": "known", "refused": false, "ok": true, "answer_len": 167, "top_score": 0.98, "sources": ["32.md", "20.md"]}
+{"q": "Кто такой Кайл Старвинд?", "type": "known", "refused": false, "ok": true, "answer_len": 195, "top_score": 0.758, "sources": ["01.md", "02.md", "25.md", "28.md", "23.md"]}
+{"q": "На какой ледяной планете была тайная база Союза вольных?", "type": "gap", "refused": false, "ok": true, "answer_len": 176, "top_score": 0.559, "sources": ["01.md", "06.md", "34.md", "23.md", "04.md"]}
+{"q": "Опиши истребитель «Коготь».", "type": "gap", "refused": false, "ok": true, "answer_len": 136, "top_score": 0.954, "sources": ["23.md", "05.md"]}
+{"q": "Кто такие эварры?", "type": "gap", "refused": true, "ok": true, "answer_len": 73, "top_score": 0.0, "sources": []}
+{"q": "Какая столица Франции?", "type": "gap", "refused": true, "ok": true, "answer_len": 73, "top_score": 0.991, "sources": []}
+{"q": "Кто такой Дарт Вейдер?", "type": "gap", "refused": true, "ok": true, "answer_len": 73, "top_score": 0.0, "sources": []}

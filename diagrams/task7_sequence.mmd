@@ -1,0 +1,32 @@
+%% Задание 7 — диаграмма последовательности обработки запроса и оценки
+sequenceDiagram
+    actor U as Пользователь
+    participant Bot as RagBot
+    participant Sec as Security
+    participant Emb as Embedder
+    participant Idx as FAISS-индекс
+    participant LLM as LLM
+    participant Log as Лог
+
+    U->>Bot: вопрос
+    Bot->>Sec: is_query_safe(q)
+    alt запрос — jailbreak (точка сбоя)
+        Sec-->>Bot: небезопасен
+        Bot-->>U: отказ (blocked)
+    end
+    Bot->>Emb: encode(q)
+    Emb->>Idx: search(vector, recall_k)
+    Idx-->>Bot: кандидаты + scores
+    alt незнакомая сущность / scores < min_score (точка сбоя: пробел в базе)
+        Bot-->>U: «Я не знаю»
+    end
+    Bot->>Sec: filter_chunks(top_k)
+    Sec-->>Bot: очищенные чанки
+    Bot->>LLM: prompt(few-shot, CoT, context)
+    LLM-->>Bot: черновик (точка сбоя: галлюцинация)
+    Bot->>Sec: guard_output(ответ)
+    Sec-->>Bot: ответ без секретов
+    Bot->>Log: запрос, chunks_found, success, sources
+    Bot-->>U: ответ + источники
+
+    Note over U,Log: evaluate.py прогоняет golden set (known/gap);<br/>падение точности или доли отказов → сигнал о пробеле
