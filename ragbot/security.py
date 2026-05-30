@@ -24,7 +24,7 @@ INJECTION_PATTERNS = [
     re.compile(r"/system\b", re.I),
     re.compile(r"\boutput\s*:\s*", re.I),
     re.compile(r"забудь\s+(все|всё|предыдущие|инструкции)", re.I),
-    re.compile(r"проигнориру\w*\s+(все|инструкции)", re.I),
+    re.compile(r"игнориру\w*\s+(все|всё|любые|предыдущие|инструкции)", re.I),
     re.compile(r"ты\s+теперь\b", re.I),
     re.compile(r"<\s*python\s*>", re.I),
     re.compile(r"os\.system|rm\s+-rf|subprocess", re.I),
